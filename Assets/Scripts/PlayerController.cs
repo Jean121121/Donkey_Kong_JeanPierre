@@ -7,10 +7,12 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 7f;
 
     public Transform groundCheck;
-    public float groundDistance = 0.25f;     // distancia del raycast hacia abajo
+    public float groundRadius = 0.2f;
     public LayerMask groundLayer;
+    public Transform visual;
 
-    Rigidbody rb;
+    private Rigidbody rb;
+    private bool grounded;
 
     void Awake()
     {
@@ -19,37 +21,27 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // --- Input horizontal (A/D o flechas) ---
         float x = 0f;
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) x = -1f;
-            if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) x = 1f;
-        }
 
-        // --- Movimiento ---
+        if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) x = -1f;
+        if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) x = 1f;
+
+        grounded = Physics.CheckSphere(groundCheck.position, groundRadius, groundLayer);
+
         Vector3 v = rb.linearVelocity;
         v.x = x * moveSpeed;
 
-        // --- Suelo (Raycast) ---
-        bool grounded = Physics.Raycast(groundCheck.position, Vector3.down, groundDistance, groundLayer);
-
-        // --- Salto ---
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (Keyboard.current.spaceKey.wasPressedThisFrame && grounded)
         {
-            Debug.Log("SPACE | grounded=" + grounded);
-
-            if (grounded)
-                v.y = jumpForce;
+            v.y = jumpForce;
         }
 
         rb.linearVelocity = v;
-    }
 
-    // (Opcional) Para ver el rayo en Scene mientras juegas
-    void OnDrawGizmosSelected()
-    {
-        if (groundCheck == null) return;
-        Gizmos.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * groundDistance);
+        if (visual != null)
+            {
+                if (x < 0) visual.rotation = Quaternion.Euler(0, -90, 0);
+                if (x > 0) visual.rotation = Quaternion.Euler(0, 90, 0);
+            }
     }
 }
