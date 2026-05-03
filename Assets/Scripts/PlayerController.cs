@@ -11,12 +11,22 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayer;
     public Transform visual;
 
+    public int maxJumps = 2;
+
+    // 🔊 AUDIO
+    public AudioSource audioSource;
+    public AudioClip jumpSound;
+
     private Rigidbody rb;
     private bool grounded;
+    private int jumpsLeft;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        jumpsLeft = maxJumps;
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -28,20 +38,31 @@ public class PlayerController : MonoBehaviour
 
         grounded = Physics.CheckSphere(groundCheck.position, groundRadius, groundLayer);
 
+        if (grounded)
+        {
+            jumpsLeft = maxJumps;
+        }
+
         Vector3 v = rb.linearVelocity;
         v.x = x * moveSpeed;
 
-        if (Keyboard.current.spaceKey.wasPressedThisFrame && grounded)
+        if (Keyboard.current.spaceKey.wasPressedThisFrame && jumpsLeft > 0)
         {
             v.y = jumpForce;
+            jumpsLeft--;
+
+            if (audioSource != null && jumpSound != null)
+            {
+                audioSource.PlayOneShot(jumpSound);
+            }
         }
 
         rb.linearVelocity = v;
 
         if (visual != null)
-            {
-                if (x < 0) visual.rotation = Quaternion.Euler(0, -90, 0);
-                if (x > 0) visual.rotation = Quaternion.Euler(0, 90, 0);
-            }
+        {
+            if (x < 0) visual.rotation = Quaternion.Euler(0, -90, 0);
+            if (x > 0) visual.rotation = Quaternion.Euler(0, 90, 0);
+        }
     }
 }

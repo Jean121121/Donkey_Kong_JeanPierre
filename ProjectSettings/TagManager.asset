@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Jugador
   - Ladder
+  - Undefined
+  - Barrel
+  - wall
+  - Wall
   layers:
   - Default
   - TransparentFX
